@@ -6,7 +6,9 @@ import android.net.Network;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -32,10 +34,13 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        TextView darkSky = (TextView)findViewById(R.id.darkSkyAttribution);
+        darkSky.setMovementMethod(LinkMovementMethod.getInstance());
+
         String apiKey = "0da3fff393bbd6f99c152e194db91af1";
 
-        double latitude = 37.8267;
-        double longitude = -122.4233;
+        double latitude = 38.1333;
+        double longitude = -85.6028;
 
         String forecastURL = "https://api.darksky.net/forecast/"
                 + apiKey + "/" + latitude + "," + longitude;
@@ -88,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         currentWeather.setHumidity(currently.getDouble( "humidity"));
         currentWeather.setTime(currently.getLong("time"));
         currentWeather.setIcon(currently.getString("icon"));
-        currentWeather.setLocationLabel("Alcatraz Island, CA");
+        currentWeather.setLocationLabel("Louisville, KY");
         currentWeather.setPrecipChance(currently.getDouble("precipProbability"));
         currentWeather.setSummary(currently.getString("summary"));
         currentWeather.setTemperature(currently.getDouble("temperature"));
