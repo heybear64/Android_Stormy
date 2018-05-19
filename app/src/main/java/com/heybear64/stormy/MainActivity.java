@@ -1,6 +1,8 @@
 package com.heybear64.stormy;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
@@ -8,8 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.heybear64.stormy.databinding.ActivityMainBinding;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -26,21 +32,32 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     public static final String TAG = MainActivity.class.getSimpleName();
-
     private CurrentWeather currentWeather;
+
+    private ImageView iconImageView;
+
+    final double latitude = 38.1333;
+    final double longitude = -85.6028;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        getForecast(latitude, longitude);
+        Log.d(TAG, "Main UI code is running, Horray!");
+    }
+
+    private void getForecast(double latitude, double longitude){
+        final ActivityMainBinding binding = DataBindingUtil.setContentView(MainActivity.this,
+        R.layout.activity_main);
 
         TextView darkSky = (TextView)findViewById(R.id.darkSkyAttribution);
         darkSky.setMovementMethod(LinkMovementMethod.getInstance());
 
+        iconImageView = (ImageView) findViewById(R.id.iconImageView);
+
         String apiKey = "0da3fff393bbd6f99c152e194db91af1";
 
-        double latitude = 38.1333;
-        double longitude = -85.6028;
+
 
         String forecastURL = "https://api.darksky.net/forecast/"
                 + apiKey + "/" + latitude + "," + longitude;
@@ -68,6 +85,28 @@ public class MainActivity extends AppCompatActivity {
 
                             currentWeather = getCurrentDetails(jsonData);
 
+                            final CurrentWeather displayWeather = new CurrentWeather(
+                                    currentWeather.getLocationLabel(),
+                                    currentWeather.getIcon(),
+                                    currentWeather.getTime(),
+                                    currentWeather.getTemperature(),
+                                    currentWeather.getHumidity(),
+                                    currentWeather.getPrecipChance(),
+                                    currentWeather.getSummary(),
+                                    currentWeather.getTimeZone()
+                            );
+
+                            binding.setWeather(displayWeather);
+
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Drawable drawable = getResources().getDrawable(displayWeather.getIconId());
+                                    iconImageView.setImageDrawable(drawable);
+                                }
+                            });
+
+
                         } else {
                             alertUserAboutError();
                         }
@@ -79,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-        Log.d(TAG, "Main UI code is running, Horray!");
     }
 
     private CurrentWeather getCurrentDetails(String jsonData) throws JSONException {
@@ -123,5 +161,10 @@ public class MainActivity extends AppCompatActivity {
     private void alertUserAboutError() {
         AlertDialogFragment dialog = new AlertDialogFragment();
         dialog.show(getFragmentManager(), "error_dialog");
+    }
+
+    public void refreshOnClick(View view){
+        Toast.makeText(this,"Refreshing data", Toast.LENGTH_LONG).show();
+        getForecast(latitude,longitude);
     }
 }
